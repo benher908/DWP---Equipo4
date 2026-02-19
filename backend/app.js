@@ -1,8 +1,13 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from "path"; 
+import { fileURLToPath } from 'url';
 import authRoutes from "./routes/auth.routes.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -18,7 +23,15 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get(/^(?!\/api).+/, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.use(errorHandler);
+
+
 
 const PORT = process.env.PORT || 3010;
 
