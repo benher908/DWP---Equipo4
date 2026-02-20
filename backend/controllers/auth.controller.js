@@ -2,7 +2,18 @@ import * as authService from "../services/auth.service.js";
 
 export const register = async (req, res, next) => {
     try {
-        const userId = await authService.register(req.body);
+        // frontend uses spanish field names; normalize them here so service stays english
+        const { nombre, direccion, medidor, ...rest } = req.body;
+        const payload = {
+            name: nombre || rest.name,
+            address: direccion || rest.address,
+            water_meter: medidor || rest.water_meter,
+            // email and password should already be present in rest
+            email: rest.email,
+            password: rest.password
+        };
+
+        const userId = await authService.register(payload);
 
         res.status(201).json({
             success: true,

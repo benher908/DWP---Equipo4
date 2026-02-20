@@ -26,6 +26,15 @@ Este modulo corresponde al **backend en Express** del proyecto _DWP – Equipo 4
 
 ## 📁 Estructura
 
+> **Nota de despliegue**
+> Este servicio puede ejecutarse dentro de Docker junto con el resto de la aplicación. El `docker-compose.yml` en la raíz define contenedores para
+> el frontend, el backend y la base de datos MySQL (`mysql-dev`). Las variables de entorno
+> se inyectan por Docker o se leen desde un archivo `.env` (ver `.env.example`).
+> Para desarrollo local fuera de Docker asegúrate de apuntar al puerto 3309 de MySQL o
+> ajustar `DB_HOST` y `DB_PORT` según corresponda.
+
+## 📁 Estructura
+
 El proyecto utiliza una Arquitectura en Capas para separar las responsabilidades de forma clara:
 
 backend/
@@ -43,7 +52,7 @@ backend/
 
 ## | Método | Ruta (Endpoint) | Acceso | Propósito |
 
-| POST | /api/auth/registro | Público | Crea un nuevo perfil de usuario (Ciudadano).|
+| POST | /api/auth/register | Público | Crea un nuevo perfil de usuario (Ciudadano).|
 | POST | /api/auth/login | Público | Valida credenciales y entrega el token JWT. |
 
 ---

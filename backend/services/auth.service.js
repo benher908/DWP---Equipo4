@@ -54,6 +54,11 @@ export const login = async (email, password) => {
         throw new ApiError(403, "Usuario deshabilitado");
     }
 
+    if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
+        console.error("JWT secret environment variables are not set");
+        throw new ApiError(500, "Configuración del servidor incompleta");
+    }
+
     const accessToken = jwt.sign(
         { id: user.id, role: user.role },
         process.env.JWT_ACCESS_SECRET,

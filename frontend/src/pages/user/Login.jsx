@@ -44,8 +44,8 @@ export default function Login() {
 
     try {
       const data = await auth.login({ email: usuario, password });
-      // success: store token, user etc.
-      localStorage.setItem("user", data.user?.nombre || usuario);
+      // success: store token, user etc. backend returns user.name
+      localStorage.setItem("user", data.user?.name || usuario);
       navigate("/home");
     } catch (err) {
       console.error(err);
