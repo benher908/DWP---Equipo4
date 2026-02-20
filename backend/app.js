@@ -21,7 +21,8 @@ app.use(
       if (!origin) return callback(null, true);
       const allowed = process.env.FRONTEND_URL || '';
       const isLocal517 = origin.startsWith('http://localhost:517');
-      if (origin === allowed || isLocal517) {
+      const isLocal3010 = origin.startsWith('http://localhost:3010');
+      if (origin === allowed || isLocal517 || isLocal3010) {
         return callback(null, true);
       }
       console.warn('CORS blocked origin', origin);
