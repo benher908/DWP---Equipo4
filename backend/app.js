@@ -18,7 +18,7 @@ app.use(
       const allowed = process.env.FRONTEND_URL || '';
       const isLocal517 = origin.startsWith('http://localhost:517');
       const isLocal3010 = origin.startsWith('http://localhost:3010');
-      const isVercel = origin.startsWith('https://tu-proyecto-vercel.vercel.app');
+      const isVercel = origin.startsWith('https://https://dwp-equipo4.vercel.app');
       if (origin === allowed || isLocal517 || isLocal3010 || isRailway) {
         return callback(null, true);
       }
