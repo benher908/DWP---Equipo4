@@ -1,20 +1,9 @@
-# build a simple Node.js image for the backend
 FROM node:20-alpine
-
-# working directory inside container
+# No importa que no tengas una carpeta 'app' en tu PC, Docker la inventa.
 WORKDIR /app
-
-# copy only package files first for caching installs
 COPY package*.json ./
-
-# install dependencies (production or dev depending on NODE_ENV)
-RUN npm install
-
-# copy rest of backend sources
+RUN npm install --production
 COPY . .
-
-# expose port the server listens on
 EXPOSE 3010
-
-# use nodemon in development, fallback to node when not available
-CMD ["npm", "run", "dev"]
+# Asegúrate de que el archivo se llame server.js o app.js
+CMD ["node", "server.js"]
