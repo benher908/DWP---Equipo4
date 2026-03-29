@@ -19,7 +19,7 @@ app.use(
       const isLocal517 = origin.startsWith('http://localhost:517');
       const isLocal3010 = origin.startsWith('http://localhost:3010');
       const isVercel = origin.startsWith('https://dwp-equipo4.vercel.app');
-      if (origin === allowed || isLocal517 || isLocal3010 || isRailway) {
+      if (origin === allowed || isLocal517 || isLocal3010 || isVercel) {
         return callback(null, true);
       }
       console.warn('CORS blocked origin', origin);
