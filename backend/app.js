@@ -33,11 +33,11 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use(express.static(path.join(__dirname, 'public')));
+//app.use(express.static(path.join(__dirname, 'public')));
 
-app.get(/^(?!\/api).+/, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+//app.get(/^(?!\/api).+/, (req, res) => {
+  //res.sendFile(path.join(__dirname, 'public', 'index.html'));
+//});
 
 app.use(errorHandler);
 
