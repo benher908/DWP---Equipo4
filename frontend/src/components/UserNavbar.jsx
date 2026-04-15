@@ -5,9 +5,8 @@ import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import "../styles/styles.css";
 
 export default function UserNavbar() {
-
-  const navRef = useRef(null); 
-  const {isAuthenticated, logout} = useAuth();
+  const navRef = useRef(null);
+  const { isAuthenticated, logout } = useAuth();
   const isOnline = useOnlineStatus();
 
   const manejarTeclado = (e) => {
@@ -25,58 +24,55 @@ export default function UserNavbar() {
 
     if (e.key === "ArrowLeft") {
       e.preventDefault();
-      const prevIndex =
-        (currentIndex - 1 + items.length) % items.length;
+      const prevIndex = (currentIndex - 1 + items.length) % items.length;
       items[prevIndex].focus();
     }
-
   };
 
   return (
     <header className="home-navbar">
       {!isOnline && (
         <div className="offline-message">
-          Sin conexión a internet 
+          Sin conexion a internet
         </div>
       )}
 
       <div className="home-navbar-left">
         <div className="user-avatar"></div>
-          {!isAuthenticated ? (
+        {!isAuthenticated ? (
           <NavLink to="/" className="login-pill">
-            Iniciar sesión
+            Iniciar sesion
           </NavLink>
         ) : (
-          <button onClick={logout} disabled={!isOnline}>
-            Cerrar sesión
+          <button className="btn btn-primary" onClick={logout} disabled={!isOnline}>
+            Cerrar sesion
           </button>
-        )}  
+        )}
       </div>
-      
+
       <nav
         className="home-navbar-menu"
-        aria-label="Menú de usuario"
-        ref={navRef}              
-        onKeyDown={manejarTeclado} 
+        aria-label="Menu de usuario"
+        ref={navRef}
+        onKeyDown={manejarTeclado}
       >
-
-        <NavLink to="/home" className="nav-pill">
+        <NavLink to="/user/home" className="nav-pill">
           Inicio
         </NavLink>
 
-        <NavLink to="/reports" className="nav-pill">
+        <NavLink to="/user/reports" className="nav-pill">
           Reportes
         </NavLink>
 
-        <NavLink to="/notifications" className="nav-pill">
+        <NavLink to="/user/notifications" className="nav-pill">
           Avisos
         </NavLink>
 
-        <NavLink to="/schedule" className="nav-pill">
+        <NavLink to="/user/schedule" className="nav-pill">
           Horarios
         </NavLink>
 
-        <NavLink to="/tips" className="nav-pill">
+        <NavLink to="/user/tips" className="nav-pill">
           Consejos
         </NavLink>
       </nav>

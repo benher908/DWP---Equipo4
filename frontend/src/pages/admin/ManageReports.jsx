@@ -1,56 +1,114 @@
+import { useEffect, useState } from "react";
+import Loader from "../../components/Loader";
+import Alert from "../../components/ui/Alert";
+import Button from "../../components/ui/Button";
+import { reportsApi } from "../../services/api";
 import "../../styles/styles.css";
 
+const STATUSES = ["Pendiente", "En Proceso", "Atendido"];
+
 export default function ManageReports() {
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+
+  const loadReports = async () => {
+    try {
+      setLoading(true);
+      const res = await reportsApi.adminList();
+      setReports(res.data || []);
+    } catch (err) {
+      setMessage(err.message || "No se pudieron cargar los reportes.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadReports();
+  }, []);
+
+  const updateStatus = async (id, status) => {
+    try {
+      await reportsApi.adminUpdateStatus(id, status);
+      setMessage("Estado actualizado correctamente.");
+      await loadReports();
+    } catch (err) {
+      setMessage(err.message || "No se pudo actualizar el reporte.");
+    }
+  };
+
+  const deleteReport = async (id) => {
+    try {
+      await reportsApi.adminRemove(id);
+      setMessage("Reporte eliminado correctamente.");
+      await loadReports();
+    } catch (err) {
+      setMessage(err.message || "No se pudo eliminar el reporte.");
+    }
+  };
+
+  if (loading) {
+    return <Loader message="Cargando reportes..." />;
+  }
+
   return (
     <div className="admin-reports-page">
       <h2 className="admin-reports-title">Reportes</h2>
-
-      <div className="admin-reports-wrapper">
       
-        <button className="arrow-btn left">‹</button>
+      <Alert message={message} />
 
-      
-        <div className="admin-report-card">
-          <p><strong>Urgencia:</strong></p>
-          <p><strong>Dirección:</strong></p>
-          <p><strong>Descripción:</strong></p>
+      {!reports.length ? (
+        <p>No hay reportes registrados.</p>
+      ) : (
+        <table className="admin-reports-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Correo</th>
+              <th>Dirección</th>
+              <th>Descripción</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
 
-          <div className="admin-report-actions">
-            <RoleGuard allowRoles={["admin"]}>
-              <button className="btn-review">En revisión</button>
-              <button className="btn-accept">Aceptado</button>
-            </RoleGuard>
-            
-          </div>
-        </div>
+          <tbody>
+            {reports.map((report) => (
+              <tr key={report.id}>
+                <td>{report.user_name}</td>
+                <td>{report.user_email}</td>
+                <td>{report.user_address}</td>
+                <td>{report.description}</td>
+                <td>
+                  <strong>{report.status}</strong>
+                </td>
 
-     
-        <div className="admin-report-card">
-          <p><strong>Urgencia:</strong></p>
-          <p><strong>Dirección:</strong></p>
-          <p><strong>Descripción:</strong></p>
+                <td className="admin-report-actions">
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                    {STATUSES.map((status) => (
+                      <Button
+                        key={status}
+                        className="btn-review"
+                        onClick={() => updateStatus(report.id, status)}
+                      >
+                        {status}
+                      </Button>
+                    ))}
+                  </div>
 
-          <div className="admin-report-actions">
-            <button className="btn-review">En revisión</button>
-            <button className="btn-accept">Aceptado</button>
-          </div>
-        </div>
-
-     
-        <div className="admin-report-card">
-          <p><strong>Urgencia:</strong></p>
-          <p><strong>Dirección:</strong></p>
-          <p><strong>Descripción:</strong></p>
-
-          <div className="admin-report-actions">
-            <button className="btn-review">En revisión</button>
-            <button className="btn-accept">Aceptado</button>
-          </div>
-        </div>
-
-        
-        <button className="arrow-btn right">›</button>
-      </div>
+                  <Button
+                    className="btn-accept"
+                    onClick={() => deleteReport(report.id)}
+                  >
+                    Eliminar
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

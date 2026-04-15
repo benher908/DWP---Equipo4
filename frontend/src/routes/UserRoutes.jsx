@@ -12,12 +12,12 @@ export default function UserRoutes() {
   return (
     <Routes>
       <Route element={<UserLayout />}>
-        <Route path="/home" element={<Home />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/status" element={<Status />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/schedule" element={<Schedule />} />
-        <Route path="/tips" element={<Tips />} />
+        <Route path="home" element={<Home />} />
+        <Route path="reports" element={<Reports />} />
+        <Route path="status" element={<Status />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="schedule" element={<Schedule />} />
+        <Route path="tips" element={<Tips />} />
       </Route>
     </Routes>
   );

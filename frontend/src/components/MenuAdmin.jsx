@@ -1,21 +1,22 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
 
 export default function MenuAdmin() {
   const [mostrarMenu, setMostrarMenu] = useState(false);
   const navigate = useNavigate();
   const toggleButtonRef = useRef(null);
   const menuRef = useRef(null);
+  const { user, logout } = useAuth();
 
-  const cerrarSesion = () => {
-    localStorage.removeItem("admin");
+  const cerrarSesion = async () => {
+    await logout();
     setMostrarMenu(false);
-    toggleButtonRef.current?.focus();
-    navigate("/admin");
+    navigate("/login");
   };
 
   useEffect(() => {
-    if(!mostrarMenu) return; 
+    if (!mostrarMenu) return;
 
     const firstItem = menuRef.current?.querySelector("button");
     firstItem?.focus();
@@ -39,8 +40,7 @@ export default function MenuAdmin() {
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
-        const prev =
-          (currentIndex - 1 + items.length) % items.length;
+        const prev = (currentIndex - 1 + items.length) % items.length;
         items[prev].focus();
       }
     };
@@ -51,7 +51,6 @@ export default function MenuAdmin() {
       menuRef.current?.removeEventListener("keydown", handleKeyDown);
     };
   }, [mostrarMenu]);
-
 
   return (
     <div style={{ position: "relative" }}>
@@ -81,22 +80,24 @@ export default function MenuAdmin() {
             border: "1px solid #ccc",
             padding: "10px",
             boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-            zIndex: 1000,
+            zIndex: 1000
           }}
         >
           <p>
-            <strong>Nombre</strong>
+            <strong>{user?.name || "Administrador"}</strong>
           </p>
-          <p style={{ fontSize: "14px", color: "gray" }}>admin@email.com</p>
+          <p style={{ fontSize: "14px", color: "gray" }}>
+            {user?.email || "admin@email.com"}
+          </p>
 
           <hr />
 
-          <button style={{ width: "100%" }} ref={firstMenuItemRef}>
-            Mi perfil
+          <button style={{ width: "100%" }} onClick={() => navigate("/admin/dashboard")}>
+            Panel
           </button>
 
-          <button style={{ width: "100%", marginTop: "5px" }}>
-            Configuración
+          <button style={{ width: "100%", marginTop: "5px" }} onClick={() => navigate("/admin/reports")}>
+            Reportes
           </button>
 
           <button
@@ -104,15 +105,14 @@ export default function MenuAdmin() {
               width: "100%",
               marginTop: "10px",
               background: "#ff4d4d",
-              color: "#fff",
+              color: "#fff"
             }}
             onClick={cerrarSesion}
           >
-            Cerrar sesión
+            Cerrar sesion
           </button>
         </div>
       )}
     </div>
   );
 }
-

@@ -58,6 +58,16 @@ export default function AdminNavbar() {
       </NavLink>
 
       <NavLink
+        to="/admin/users"
+        style={navLinkStyle}
+        aria-current={
+          location.pathname.startsWith("/admin/users") ? "page" : undefined
+        }
+      >
+        Usuarios
+      </NavLink>
+
+      <NavLink
         to="/admin/reports"
         style={navLinkStyle}
         aria-current={

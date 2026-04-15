@@ -11,17 +11,14 @@ export const register = async (data) => {
     if (!name || !email || !address || !water_meter || !password) {
         throw new ApiError(400, "Todos los campos son obligatorios");
     }
-
     const existingEmail = await authModel.findByEmail(email);
     if (existingEmail) {
         throw new ApiError(400, "El correo ya esta registrado");
     }
-
     const existingMeter = await authModel.findByWaterMeter(water_meter);
     if (existingMeter) {
         throw new ApiError(400, "El medidor ya esta registrado");
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = await authModel.createUser({
         name,
@@ -41,7 +38,9 @@ export const login = async (email, password) => {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new ApiError(401, "Credenciales invalidas");
-    if (!user.is_active) throw new ApiError(403, "Usuario deshabilitado");
+    if (!user.is_active || user.status === "banned") {
+        throw new ApiError(403, "Usuario deshabilitado");
+    }
 
     const accessToken = jwt.sign(
         { id: user.id, role: user.role },
@@ -82,13 +81,27 @@ export const refresh = async (refreshToken) => {
         throw new ApiError(403, "Token invalido");
     }
 
+    const user = await authModel.findById(decoded.id);
+    if (!user || !user.is_active || user.status === "banned") {
+        throw new ApiError(403, "Usuario deshabilitado");
+    }
+
     const accessToken = jwt.sign(
-        { id: decoded.id },
+        { id: decoded.id, role: user.role },
         process.env.JWT_ACCESS_SECRET,
         { expiresIn: process.env.ACCESS_EXPIRES }
     );
 
-    return { accessToken };
+    return {
+        accessToken,
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            status: user.status
+        }
+    };
 };
 
 export const logout = async (token) => {
@@ -101,9 +114,7 @@ export const logoutAll = async (userId) => {
 };
 
 const PASSWORD_RESET_TOKEN_TTL_MINUTES = process.env.PASSWORD_RESET_TOKEN_TTL || 15;
-
 const buildPasswordResetToken = () => crypto.randomBytes(32).toString("hex");
-
 const hashPasswordResetToken = (token) =>
     crypto.createHash("sha256").update(token).digest("hex");
 
