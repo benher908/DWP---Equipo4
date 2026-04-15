@@ -18,8 +18,8 @@ app.use(
       const allowed = process.env.FRONTEND_URL || '';
       const isLocal517 = origin.startsWith('http://localhost:517');
       const isLocal3010 = origin.startsWith('http://localhost:3010');
-      const isRailway = origin.startsWith('https://dwp-equipo4-production.up.railway.app');
-      if (origin === allowed || isLocal517 || isLocal3010 || isRailway) {
+      const isVercel = origin.startsWith('https://dwp-equipo4.vercel.app');
+      if (origin === allowed || isLocal517 || isLocal3010 || isVercel) {
         return callback(null, true);
       }
       console.warn('CORS blocked origin', origin);
@@ -33,11 +33,11 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use(express.static(path.join(__dirname, 'public')));
+//app.use(express.static(path.join(__dirname, 'public')));
 
-app.get(/^(?!\/api).+/, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+//app.get(/^(?!\/api).+/, (req, res) => {
+  //res.sendFile(path.join(__dirname, 'public', 'index.html'));
+//});
 
 app.use(errorHandler);
 
