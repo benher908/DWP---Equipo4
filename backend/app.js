@@ -37,6 +37,7 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api", contentRoutes);
 //app.use(express.static(path.join(__dirname, 'public')));
 
 //app.get(/^(?!\/api).+/, (req, res) => {
