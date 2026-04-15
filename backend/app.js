@@ -17,10 +17,10 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
+      const isVercel = origin.includes(".vercel.app");
       const allowed = process.env.FRONTEND_URL || '';
       const isLocal517 = origin.startsWith('http://localhost:517');
       const isLocal3010 = origin.startsWith('http://localhost:3010');
-      const isVercel = origin.startsWith('https://dwp-equipo4-gray.vercel.app');
       if (origin === allowed || isLocal517 || isLocal3010 || isVercel) {
         return callback(null, true);
       }
