@@ -12,7 +12,6 @@ import Button from "../../components/ui/Button";
 import Alert from "../../components/ui/Alert";
 
 export default function Login() {
-
   const navigate = useNavigate();
   const { login } = useAuth();
   const userRef = useRef(null);
@@ -21,24 +20,20 @@ export default function Login() {
 
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
-
   const [errorUsuario, setErrorUsuario] = useState(false);
   const [errorPassword, setErrorPassword] = useState(false);
-
   const [mensajeError, setMensajeError] = useState("");
   const [loading, setLoading] = useState(false);
   const [esExito, setEsExito] = useState(false);
-  
   const [sessionExpirada, setSessionExpirada] = useState(false);
 
   useEffect(() => {
     const expired = localStorage.getItem("sessionExpired");
 
     if (expired) {
-      setMensajeError("Tu sesión expiró. Inicia sesión nuevamente.");
+      setMensajeError("Tu sesion expiro. Inicia sesion nuevamente.");
       setEsExito(false);
       setSessionExpirada(true);
-
       localStorage.removeItem("sessionExpired");
     }
   }, []);
@@ -49,10 +44,9 @@ export default function Login() {
     }
   }, [sessionExpirada]);
 
- const manejarLogin = async () => {
+  const manejarLogin = async () => {
     let hayError = false;
 
-    // Validaciones iniciales
     if (!usuario.trim()) {
       setErrorUsuario(true);
       userRef.current?.focus();
@@ -63,7 +57,9 @@ export default function Login() {
 
     if (!password.trim()) {
       setErrorPassword(true);
-      if (!hayError) passwordRef.current?.focus();
+      if (!hayError) {
+        passwordRef.current?.focus();
+      }
       hayError = true;
     } else {
       setErrorPassword(false);
@@ -76,7 +72,7 @@ export default function Login() {
     }
 
     if (!navigator.onLine) {
-      setMensajeError("Sin conexión a internet.");
+      setMensajeError("Sin conexion a internet.");
       return;
     }
 
@@ -85,56 +81,48 @@ export default function Login() {
 
     try {
       const data = await auth.login({
-        email: usuario.trim(), // Limpiamos espacios para evitar errores de validación
-        password,
+        email: usuario.trim(),
+        password
       });
 
-      // Extraemos la información del Backend
-      const role = data.user?.role; 
-      const token = data.token;
+      const role = data.user?.role;
 
       setEsExito(true);
-      setMensajeError("¡Bienvenido! Iniciando sesión...");
+      setMensajeError("Bienvenido. Iniciando sesion...");
 
       login({
-        token: data.token,
+        token: data.accessToken,
         user: {
+          id: data.user?.id,
           name: data.user?.name || usuario,
-          rol: role,
-        },
+          email: data.user?.email,
+          role
+        }
       });
-    
+
       sendLogin(role);
 
-      // Redirección con retraso para mostrar el mensaje de éxito (Tarea 4: Performance)
       setTimeout(() => {
         if (role === "admin") {
           navigate("/admin/dashboard");
-        } else if (role === "user") {
-          navigate("/user/home");
-        } else {
-          navigate("/");
+          return;
         }
-      }, 1200);
 
+        navigate("/user/home");
+      }, 1200);
     } catch (err) {
       console.error("Error en login:", err);
       setEsExito(false);
 
       if (!window.navigator.onLine) {
-        setMensajeError("Sin conexión a internet. Verifique su red.");
-      } else if (
-        err.message?.includes("Network Error") ||
-        err.message?.includes("fetch")
-      ) {
+        setMensajeError("Sin conexion a internet. Verifique su red.");
+      } else if (err.message?.includes("Network Error") || err.message?.includes("fetch")) {
         setMensajeError("Error de red: No se pudo conectar con el servidor.");
       } else {
-        // Tarea 3: Mensajería de error clara pero segura
         setMensajeError(err.message || "Credenciales incorrectas. Intente de nuevo.");
       }
 
       alertRef.current?.focus();
-
     } finally {
       setLoading(false);
     }
@@ -142,7 +130,7 @@ export default function Login() {
 
   return (
     <div className="login-page">
-       <button
+      <button
         type="button"
         className="btn-inicio"
         onClick={() => navigate("/user/home")}
@@ -151,7 +139,7 @@ export default function Login() {
       </button>
       <div className="login-card">
         <div className="login-header">
-          <h2 tabIndex="0">Inicio de sesión</h2>
+          <h2 tabIndex="0">Inicio de sesion</h2>
         </div>
         <form
           onSubmit={(e) => {
@@ -160,7 +148,6 @@ export default function Login() {
           }}
           noValidate
         >
-
           {mensajeError && (
             <div ref={alertRef} tabIndex="-1">
               <Alert
@@ -171,9 +158,7 @@ export default function Login() {
           )}
 
           <div className="form-group">
-            <Label htmlFor="usuario">
-              Usuario:
-            </Label>
+            <Label htmlFor="usuario">Correo electrónico:</Label>
             <Input
               ref={userRef}
               id="usuario"
@@ -192,21 +177,14 @@ export default function Login() {
             />
 
             {errorUsuario && (
-              <p
-                id="usuario-error"
-                className="error-message"
-                role="alert"
-              >
+              <p id="usuario-error" className="error-message" role="alert">
                 El usuario es obligatorio
               </p>
             )}
-
           </div>
 
           <div className="form-group">
-            <Label htmlFor="password">
-              Contraseña:
-            </Label>
+            <Label htmlFor="password">Contraseña:</Label>
             <Input
               ref={passwordRef}
               id="password"
@@ -225,19 +203,12 @@ export default function Login() {
               error={errorPassword}
             />
             {errorPassword && (
-              <p
-                id="password-error"
-                className="error-message"
-                role="alert"
-              >
-                La contraseña es obligatoria
+              <p id="password-error" className="error-message" role="alert">
+                La contrasena es obligatoria
               </p>
             )}
           </div>
-          <div
-            className="login-actions"
-            aria-busy={loading ? "true" : "false"}
-          >
+          <div className="login-actions" aria-busy={loading ? "true" : "false"}>
             <Button
               className="btn-secondary"
               tabIndex="0"
@@ -254,19 +225,23 @@ export default function Login() {
             >
               {loading ? (
                 <span aria-live="polite">
-                  <Loader message="Iniciando sesión..." />
+                  <Loader message="Iniciando sesion..." />
                 </span>
-
               ) : (
-                "Iniciar sesión"
+                "Iniciar sesion"
               )}
             </Button>
           </div>
           <div className="end">
-            <Button type="button"
-                className="link-button"
-                onClick={() => navigate("/forgotpassword")}>Olvide mi contraseña</Button>
+            <Button
+              type="button"
+              className="link-button"
+              onClick={() => navigate("/forgotpassword")}
+            >
+              Olvide mi contrasena
+            </Button>
           </div>
+          <Link to="/register" style={{ display: "none" }} />
         </form>
       </div>
     </div>

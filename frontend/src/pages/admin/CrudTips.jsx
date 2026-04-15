@@ -1,45 +1,130 @@
 import "../../styles/styles.css";
-import { useState } from "react";
-import RoleGuard from "../../components/RoleGuard";
+import { useEffect, useState } from "react";
 import Input from "../../components/ui/Input";
 import Label from "../../components/ui/Label";
+import Loader from "../../components/Loader";
+import Alert from "../../components/ui/Alert";
+import Button from "../../components/ui/Button";
+import { tipsApi } from "../../services/api";
+
+const emptyForm = { title: "", description: "" };
 
 export default function CrudTips() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [form, setForm] = useState(emptyForm);
+  const [tips, setTips] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+
+  const loadTips = async () => {
+    try {
+      setLoading(true);
+      const res = await tipsApi.list();
+      setTips(res.data || []);
+    } catch (err) {
+      setMessage(err.message || "No se pudieron cargar los consejos.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTips();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (editingId) {
+      await tipsApi.update(editingId, form);
+      setMessage("Actualizado");
+    } else {
+      await tipsApi.create(form);
+      setMessage("Creado");
+    }
+
+    setForm(emptyForm);
+    setEditingId(null);
+    loadTips();
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await tipsApi.remove(id);
+      setMessage("Consejo eliminado correctamente.");
+      await loadTips();
+    } catch (err) {
+      setMessage(err.message || "No se pudo eliminar el consejo.");
+    }
+  };
+
+  if (loading) {
+    return <Loader message="Cargando consejos..." />;
+  }
 
   return (
     <div className="admin-tips-page">
       <div className="admin-tips-card">
         <h2 className="admin-tips-title">Consejos de ahorro</h2>
 
-        <div className="form-group">
-          <Label htmlFor="tittle">Título del Consejo:</Label>
-          <Input 
-            id="title"
-            value={title}
-            type="text"
-            onChange={(e) => setTitle(e.target.value)} 
-            placeholder="Ej. Cierra la llave al cepillarte" />
-        </div>
+        <Alert message={message} type="success" />
 
-        <div className="form-group">
-          <Label htmlFor="description">Descripción:</Label>
-          <textarea
-            id="description"
-            rows="4"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe el consejo de ahorro de agua"
-          ></textarea>
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <Label htmlFor="tip-tittle">Título</Label>
+            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <Label htmlFor="tip-description">Contenido del consejo:</Label>
+            <Input 
+            value={form.description} 
+            onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </div>
 
-        <div className="admin-tips-actions">
-          <button className="btn-cancel">Cancelar</button>
+          <div className="admin-tips-actions">
+            <Button
+              type="button"
+              className="btn-cancel"
+              onClick={() => {
+                setContent("");
+                setEditingId(null);
+              }}
+            >
+              Cancelar
+            </Button>
 
-          <RoleGuard allowRoles={["admin"]}>
-            <button className="btn-publish">Publicar</button>
-          </RoleGuard>
+            <Button type="submit" className="btn-publish">
+              {editingId ? "Actualizar" : "Publicar"}
+            </Button>
+          </div>
+        </form>
+
+        <div style={{ marginTop: "24px", display: "grid", gap: "12px" }}>
+          {tips.map((tip) => (
+            <div key={tip.id} className="tip-item">
+            <p>{tip.title}</p>
+            <p>{tip.description}</p>              
+            <p>{new Date(tip.created_at).toLocaleString()}</p>
+              <div className="admin-tips-actions">
+                <Button
+                  className="btn-cancel"
+                  onClick={() => {
+                    setEditingId(tip.id);
+                    setForm(tip);
+                  }}
+                >
+                  Editar
+                </Button>
+                <Button
+                  className="btn-publish"
+                  onClick={() => handleDelete(tip.id)}
+                >
+                  Eliminar
+                </Button>
+              </div>
+            </div>
+          ))}
+          {!tips.length && <p>No hay consejos registrados.</p>}
         </div>
       </div>
     </div>

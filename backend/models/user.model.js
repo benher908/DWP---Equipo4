@@ -70,3 +70,14 @@ export const deleteAllUserTokens = async (userId) => {
         [userId]
     );
 };
+
+export const findById = async (userId) => {
+    const [rows] = await db.execute(
+        `SELECT id, name, email, role, status, is_active
+         FROM users
+         WHERE id = ?`,
+        [userId]
+    );
+
+    return rows[0];
+};

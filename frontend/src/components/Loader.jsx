@@ -1,5 +1,4 @@
-import React from "react";
-import "../styles/styles.css"; // loader styles are included here
+import "../styles/styles.css"; 
 
 export default function Loader({ message = "Cargando..." }) {
   return (
@@ -10,7 +9,6 @@ export default function Loader({ message = "Cargando..." }) {
       aria-busy="true"
     >
       <div className="spinner" aria-hidden="true"></div>
-      {/* visually hidden text for screen readers */}
       <span className="sr-only">{message}</span>
     </div>
   );

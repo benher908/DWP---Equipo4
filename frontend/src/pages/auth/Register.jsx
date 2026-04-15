@@ -11,9 +11,7 @@ import Button from "../../components/ui/Button";
 import Alert from "../../components/ui/Alert";
 
 export default function Register() {
-
   const navigate = useNavigate();
-
   const headingRef = useRef(null);
   const firstInputRef = useRef(null);
 
@@ -29,43 +27,52 @@ export default function Register() {
   const [mensaje, setMensaje] = useState("");
   const [loading, setLoading] = useState(false);
   const [esExito, setEsExito] = useState(false);
+
   useEffect(() => {
     firstInputRef.current?.focus();
+    headingRef.current?.focus();
   }, []);
+
   const validar = () => {
     const nuevosErrores = {};
+
     if (!form.nombre.trim()) {
       nuevosErrores.nombre = "Nombre obligatorio";
     }
     if (!form.email.includes("@")) {
-      nuevosErrores.email = "Correo inválido";
+      nuevosErrores.email = "Correo invalido";
     }
     if (!form.direccion.trim()) {
-      nuevosErrores.direccion = "Dirección obligatoria";
+      nuevosErrores.direccion = "Direccion obligatoria";
     }
     if (!form.medidor.trim()) {
-      nuevosErrores.medidor = "Número de medidor obligatorio";
+      nuevosErrores.medidor = "Numero de medidor obligatorio";
     }
-    if (form.password.length < 6) {
-      nuevosErrores.password = "Mínimo 6 caracteres";
+    if (form.password.length < 8) {
+      nuevosErrores.password = "Minimo 8 caracteres";
     }
     if (form.password !== form.confirm) {
-      nuevosErrores.confirm = "Las contraseñas no coinciden";
+      nuevosErrores.confirm = "Las contrasenas no coinciden";
     }
+
     return nuevosErrores;
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validacion = validar();
+
     if (Object.keys(validacion).length > 0) {
       setErrors(validacion);
       setEsExito(false);
       setMensaje("Revisa los errores del formulario.");
       return;
     }
+
     setErrors({});
     setMensaje("");
     setLoading(true);
+
     try {
       await auth.register({
         nombre: form.nombre,
@@ -73,38 +80,32 @@ export default function Register() {
         direccion: form.direccion,
         medidor: form.medidor,
         password: form.password
-      });      
+      });
+
       setEsExito(true);
-      setMensaje("¡Registro exitoso! Redirigiendo...");
+      setMensaje("Registro exitoso. Redirigiendo...");
+
       setTimeout(() => {
-        localStorage.setItem("user", form.nombre);
-        navigate("/user/home");
-
+        navigate("/login");
       }, 1500);
-
     } catch (err) {
-        console.error(err);
-        if (!window.navigator.onLine) {
-          setMensaje("Sin conexión a internet. Verifica tu red.");
-        }
-        else if (err.response) {
-          setMensaje(err.response.data?.message || "Error del servidor.");
-        }
-        else if (err.request) {
-          setMensaje("No se pudo conectar con el servidor.");
-        }
-        else {
-          setMensaje(err.message || "Error al registrar la cuenta.");
-        }
-        setEsExito(false);
+      console.error(err);
+
+      if (!window.navigator.onLine) {
+        setMensaje("Sin conexion a internet. Verifica tu red.");
+      } else {
+        setMensaje(err.message || "Error al registrar la cuenta.");
+      }
+
+      setEsExito(false);
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <div className="register-page">
-      <Button
-        className="btn-inicio"
-        onClick={() => navigate("/")}
-      >
+      <Button className="btn-inicio" onClick={() => navigate("/")}>
         Inicio
       </Button>
       <div className="register-card">
@@ -122,166 +123,109 @@ export default function Register() {
         )}
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
-            <Label htmlFor="nombre">
-              Nombre:
-            </Label>
+            <Label htmlFor="nombre">Nombre:</Label>
             <Input
               ref={firstInputRef}
               id="nombre"
               value={form.nombre}
-              onChange={(e) =>
-                setForm({ ...form, nombre: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, nombre: e.target.value })}
               error={errors.nombre}
               aria-describedby={errors.nombre ? "nombre-error" : undefined}
             />
 
             {errors.nombre && (
-              <p
-                id="nombre-error"
-                className="error-message"
-                role="alert"
-              >
+              <p id="nombre-error" className="error-message" role="alert">
                 {errors.nombre}
               </p>
             )}
-
           </div>
           <div className="form-group">
-            <Label htmlFor="email">
-              Correo electrónico:
-            </Label>
+            <Label htmlFor="email">Correo electrónico:</Label>
             <Input
               id="email"
               type="email"
               value={form.email}
-              onChange={(e) =>
-                setForm({ ...form, email: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
               error={errors.email}
               aria-describedby={errors.email ? "email-error" : undefined}
             />
 
             {errors.email && (
-              <p
-                id="email-error"
-                className="error-message"
-                role="alert"
-              >
+              <p id="email-error" className="error-message" role="alert">
                 {errors.email}
               </p>
             )}
-
           </div>
           <div className="form-group">
-            <Label htmlFor="direccion">
-              Dirección:
-            </Label>
+            <Label htmlFor="direccion">Dirección:</Label>
             <Input
               id="direccion"
               value={form.direccion}
-              onChange={(e) =>
-                setForm({ ...form, direccion: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, direccion: e.target.value })}
               error={errors.direccion}
               aria-describedby={errors.direccion ? "direccion-error" : undefined}
             />
 
             {errors.direccion && (
-              <p
-                id="direccion-error"
-                className="error-message"
-                role="alert"
-              >
+              <p id="direccion-error" className="error-message" role="alert">
                 {errors.direccion}
               </p>
             )}
-
           </div>
           <div className="form-group">
-            <Label htmlFor="medidor">
-              Medidor:
-            </Label>
+            <Label htmlFor="medidor">Medidor:</Label>
             <Input
               id="medidor"
               value={form.medidor}
-              onChange={(e) =>
-                setForm({ ...form, medidor: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, medidor: e.target.value })}
               error={errors.medidor}
               aria-describedby={errors.medidor ? "medidor-error" : undefined}
             />
 
             {errors.medidor && (
-              <p
-                id="medidor-error"
-                className="error-message"
-                role="alert"
-              >
+              <p id="medidor-error" className="error-message" role="alert">
                 {errors.medidor}
               </p>
             )}
-
           </div>
           <div className="form-row">
             <div className="form-group">
-              <Label htmlFor="password">
-                Contraseña:
-              </Label>
+              <Label htmlFor="password">Contraseña:</Label>
 
               <Input
                 id="password"
                 type="password"
                 value={form.password}
-                onChange={(e) =>
-                  setForm({ ...form, password: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
                 error={errors.password}
                 aria-describedby={errors.password ? "password-error" : undefined}
               />
 
               {errors.password && (
-                <p
-                  id="password-error"
-                  className="error-message"
-                  role="alert"
-                >
+                <p id="password-error" className="error-message" role="alert">
                   {errors.password}
                 </p>
               )}
-
             </div>
             <div className="form-group">
-              <Label htmlFor="confirm">
-                Confirmar contraseña:
-              </Label>
+              <Label htmlFor="confirm">Confirmar contraseña:</Label>
               <Input
                 id="confirm"
                 type="password"
                 value={form.confirm}
-                onChange={(e) =>
-                  setForm({ ...form, confirm: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, confirm: e.target.value })}
                 error={errors.confirm}
                 aria-describedby={errors.confirm ? "confirm-error" : undefined}
               />
 
               {errors.confirm && (
-                <p
-                  id="confirm-error"
-                  className="error-message"
-                  role="alert"
-                >
+                <p id="confirm-error" className="error-message" role="alert">
                   {errors.confirm}
                 </p>
               )}
-
             </div>
           </div>
-          <div
-            className="register-footer"
-            aria-busy={loading ? "true" : "false"}
-          >
+          <div className="register-footer" aria-busy={loading ? "true" : "false"}>
             <span className="login-link">
               ¿Ya tienes una cuenta?
               <Button
@@ -291,25 +235,16 @@ export default function Register() {
               >
                 Inicia sesión
               </Button>
-
             </span>
 
-            <Button
-              type="submit"
-              className="btn-register"
-              disabled={loading}
-            >
-
+            <Button type="submit" className="btn-register" disabled={loading}>
               {loading ? (
-
                 <span aria-live="polite">
                   <Loader message="Registrando..." />
                 </span>
-
               ) : (
                 "Registrarse"
               )}
-
             </Button>
           </div>
         </form>

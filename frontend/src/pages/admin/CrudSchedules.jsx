@@ -1,72 +1,141 @@
 import "../../styles/styles.css";
-import { useState } from "react";
-import RoleGuard from "../../components/RoleGuard";
+import { useEffect, useState } from "react";
 import Input from "../../components/ui/Input";
-import Label from "../../components/ui/Label"
+import Label from "../../components/ui/Label";
+import Loader from "../../components/Loader";
+import Alert from "../../components/ui/Alert";
+import Button from "../../components/ui/Button";
+import { schedulesApi } from "../../services/api";
+
+const emptyForm = { zone: "", day: "", shift: "", hour: "" };
 
 export default function CrudSchedules() {
-  const [zona, setZona] = useState("");
-  const [dia, setDia] = useState("");
-  const [inicio, setInicio] = useState("");
-  const [fin, setFin] = useState("");
+  const [form, setForm] = useState(emptyForm);
+  const [schedules, setSchedules] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+
+  const loadSchedules = async () => {
+    try {
+      setLoading(true);
+      const res = await schedulesApi.list();
+      setSchedules(res.data || []);
+    } catch (err) {
+      setMessage(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+   useEffect(() => {
+    loadSchedules();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      if (editingId) {
+        await schedulesApi.update(editingId, form);
+        setMessage("Horario actualizado");
+      } else {
+        await schedulesApi.create(form);
+        setMessage("Horario creado");
+      }
+
+      setForm(emptyForm);
+      setEditingId(null);
+      await loadSchedules();
+    } catch (err) {
+      setMessage(err.message);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await schedulesApi.remove(id);
+      setMessage("Horario eliminado correctamente.");
+      await loadSchedules();
+    } catch (err) {
+      setMessage(err.message || "No se pudo eliminar el horario.");
+    }
+  };
+
+  if (loading) {
+    return <Loader message="Cargando horarios..." />;
+  }
 
   return (
     <div className="admin-schedule-page">
       <div className="admin-schedule-card">
         <h2 className="admin-schedule-title">
-          Crear Horario de Abastecimiento
+          Gestion de horarios
         </h2>
 
-        <div className="admin-schedule-form">
-          <div className="form-group">
-            <Label htmlFor="zona">Zona:</Label>
-            <Input 
-              id="zona" 
-              value={zona} 
-              type="text" 
-              onChange={(e) => setZona(e.target.value)}/>
-          </div>
+      <Alert message={message} type="success" />
 
+        <form className="admin-schedule-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <Label htmlFor="dia">Día:</Label>
-            <Input 
-              id="dia" 
-              value={dia} 
-              type="text"
-              onChange={(e) => setDia(e.target.value)} />
+            <Label htmlFor="zone">Zona</Label>
+            <Input value={form.zone} onChange={(e) => setForm({ ...form, zone: e.target.value })} />
           </div>
-
           <div className="form-group">
-            <Label htmlFor="inicio">Hora Inicio:</Label>
-            <Input 
-              id="inicio" 
-              value={inicio}
-              type="time"
-              onChange={(e) => setInicio(e.target.value)}
-             />
+            <Label htmlFor="day">Día</Label>
+            <Input value={form.day} onChange={(e) => setForm({ ...form, day: e.target.value })} />
           </div>
-
           <div className="form-group">
-            <Label htmlFor="fin">Hora Fin:</Label>
-            <input 
-              id="fin" 
-              value={fin} 
-              type="time"
-              onChange={(e) => setFin(e.target.value)} />
+            <Label htmlFor="shift">Turno</Label>
+            <Input value={form.shift} onChange={(e) => setForm({ ...form, shift: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <Label htmlFor="hour">Hora</Label>
+            <Input value={form.hour} onChange={(e) => setForm({ ...form, hour: e.target.value })} />
           </div>
 
           <div className="admin-schedule-actions">
-            <RoleGuard allowRoles={["admin"]}>
-              <button className="btn-delete">Eliminar</button>
-            </RoleGuard>
-            
-            <button className="btn-cancel">Cancelar</button>
+            <Button
+              type="button"
+              className="btn-cancel"
+              onClick={() => {
+                setContent("");
+                setEditingId(null);
+              }}
+            >
+              Cancelar
+            </Button>
 
-            <RoleGuard allowRoles={["admin"]}>
-              <button className="btn-save">Guardar</button>
-            </RoleGuard>
-            
+            <Button type="submit" className="btn-save">
+              {editingId ? "Actualizar" : "Guardar"}
+            </Button>
           </div>
+        </form>
+
+        <div style={{ marginTop: "24px", display: "grid", gap: "12px" }}>
+          {schedules.map((schedule) => (
+            <div key={schedule.id} className="admin-report-card">
+              <p>{schedule.zone} - {schedule.day} - {schedule.shift} - {schedule.hour}</p>
+              <p>{new Date(schedule.created_at).toLocaleString()}</p>
+              <div className="admin-schedule-actions">
+                <Button
+                  className="btn-cancel"
+                  onClick={() => {
+                    setEditingId(schedule.id);
+                    setForm(schedule);
+                  }}
+                >
+                  Editar
+                </Button>
+                <Button
+                  className="btn-delete"
+                  onClick={() => handleDelete(schedule.id)}
+                >
+                  Eliminar
+                </Button>
+              </div>
+            </div>
+          ))}
+          {!schedules.length && <p>No hay horarios registrados.</p>}
         </div>
       </div>
     </div>

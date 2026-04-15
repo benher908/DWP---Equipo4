@@ -1,14 +1,31 @@
-import { useRef, useEffect } from "react";
-import useFetch from "../../hooks/useFetch";
+import { useRef, useEffect, useState } from "react";
 import Loader from "../../components/Loader";
+import { announcementsApi } from "../../services/api";
 
 export default function Notifications() {
   const headingRef = useRef(null);
-
-  const { data, error, loading } = useFetch('/notifications', {}, []);
+  const [announcements, setAnnouncements] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     headingRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const loadAnnouncements = async () => {
+      try {
+        setLoading(true);
+        const res = await announcementsApi.list();
+        setAnnouncements(res.data || []);
+      } catch (err) {
+        setError(err.message || "No se pudieron cargar los avisos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAnnouncements();
   }, []);
 
   if (loading) {
@@ -22,7 +39,7 @@ export default function Notifications() {
   if (error) {
     return (
       <div className="notifications-page">
-        <p role="alert">Error al cargar avisos: {error.message}</p>
+        <p role="alert">Error al cargar avisos: {error}</p>
       </div>
     );
   }
@@ -36,18 +53,19 @@ export default function Notifications() {
       </div>
 
       <div className="notifications-grid">
-        {data && data.length ? (
-          data.map((n) => (
-            <div key={n.id} className="notification-card">
+        {announcements.length ? (
+          announcements.map((item) => (
+            <div key={item.id} className="notification-card">
               <div className="notification-image" />
               <div className="notification-content">
-                <p>{n.title}</p>
-                <p>{n.description}</p>
+                <p><strong>{item.title}</strong></p>
+                <p>{item.description}</p>
+                <p>{new Date(item.created_at).toLocaleString()}</p>
               </div>
             </div>
           ))
         ) : (
-          <p>No hay avisos.</p>
+          <p className="no-data">No hay avisos.</p>
         )}
       </div>
     </div>
